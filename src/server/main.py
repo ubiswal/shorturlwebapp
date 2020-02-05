@@ -9,7 +9,7 @@ from src.logic.get_full_url import get_full_url
 
 if __name__ == "__main__":
     port = 8080
-    with LocalDAO(os.path.join(os.environ["HOME"], "test.json")) as localdao:
+    with LocalDAO("shorturl") as localdao:
         class ShortUrlRequestHandler(BaseHTTPRequestHandler):
             def extract_body(self):
                 content_len = int(self.headers.get('Content-Length'))
@@ -25,6 +25,8 @@ if __name__ == "__main__":
                 else:
                     try:
                         full_url = get_full_url(self.path[1:], localdao)
+                        if not full_url.startswith("https://"):
+                            full_url = "https://{}".format(full_url)
                         my_response = short_url_redirect_html.replace("{{url}}", full_url)
                         self.send_response(200, "OK")
                         self.send_header("Content-type", "text/html")

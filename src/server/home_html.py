@@ -73,10 +73,10 @@ home_page_html = """
 short_url_redirect_html = """
 <!DOCTYPE html>
   <head>
-    <meta http-equiv = "refresh" content = "0; url = {{url}}" />
+    <meta http-equiv = "refresh" content = "3; url = {{url}}" />
   </head>
   <body>
-    Redirecting to website< ...
+    Redirecting to website in 3 seconds...
   </body>
 </html>
 """
