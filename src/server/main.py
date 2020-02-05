@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import socketserver
-from src.server.home_html import home_page_html
+import os
+from src.server.home_html import home_page_html, short_url_redirect_html, not_found_html
 from src.database.localdao import LocalDAO
 from src.logic.generate_url import generate_tiny_url
 from src.logic.get_full_url import get_full_url
@@ -8,9 +9,8 @@ from src.logic.get_full_url import get_full_url
 
 if __name__ == "__main__":
     port = 8080
-    with LocalDAO("/home/urvashi/test.json") as localdao:
+    with LocalDAO(os.path.join(os.environ["HOME"], "test.json")) as localdao:
         class ShortUrlRequestHandler(BaseHTTPRequestHandler):
-
             def extract_body(self):
                 content_len = int(self.headers.get('Content-Length'))
                 return self.rfile.read(content_len)
@@ -24,7 +24,8 @@ if __name__ == "__main__":
                     self.wfile.write(bytes(home_page_html, "utf-8"))
                 else:
                     try:
-                        my_response = get_full_url(self.path[1:], localdao)
+                        full_url = get_full_url(self.path[1:], localdao)
+                        my_response = short_url_redirect_html.replace("{{url}}", full_url)
                         self.send_response(200, "OK")
                         self.send_header("Content-type", "text/html")
                         self.send_header("Access-Control-Allow-Origin", "*")
@@ -35,7 +36,7 @@ if __name__ == "__main__":
                         self.send_header("Content-type", "text/html")
                         self.send_header("Access-Control-Allow-Origin", "*")
                         self.end_headers()
-                        self.wfile.write(bytes("This is not a valid url.", "utf-8"))
+                        self.wfile.write(bytes(not_found_html, "utf-8"))
 
             def do_POST(self):
                 # extract the body of the request
@@ -53,4 +54,3 @@ if __name__ == "__main__":
             except KeyboardInterrupt:
                 print("Shutting down server.")
                 httpd.server_close()
-
